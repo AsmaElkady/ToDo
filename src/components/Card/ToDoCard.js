@@ -1,28 +1,48 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity, Text, View } from "react-native";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Feather from "@expo/vector-icons/Feather";
+import { colors } from "../../constants/index";
 
-const ToDoCard = ({ item, onPress, onComplete, onDelete }) => {
+const ToDoCard = ({
+  item,
+  onPress,
+  onComplete,
+  onDelete,
+  showAction = true,
+}) => {
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: item.complete ? colors.lightPrimary : "white" },
+      ]}
+    >
       <TouchableOpacity onPress={onPress}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text
+          style={[
+            styles.title,
+            { textDecorationLine: item.complete ? "line-through" : "none" },
+          ]}
+        >
+          {item.title}
+        </Text>
         <Text style={styles.desc}>{item.desc}</Text>
       </TouchableOpacity>
-      <View style={styles.btnsContainer}>
-        <TouchableOpacity onPress={onComplete}>
-          <Feather
-            name="check-square"
-            size={20}
-            color={item.complete ? "green" : "black"}
-            style={{ paddingHorizontal: 4 }}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onDelete}>
-          <Feather name="trash" size={20} color="red" />
-        </TouchableOpacity>
-      </View>
+      {showAction && (
+        <View style={styles.btnsContainer}>
+          <TouchableOpacity onPress={onComplete}>
+            <Feather
+              name="check-square"
+              size={20}
+              color={item.complete ? "green" : "black"}
+              style={{ paddingHorizontal: 4 }}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onDelete}>
+            <Feather name="trash" size={20} color="red" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

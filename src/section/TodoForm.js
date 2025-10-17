@@ -3,10 +3,13 @@ import { useState } from "react";
 import Input from "../components/Input/Input";
 import MyButton from "../components/Button/MyButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import { addTodo } from "../redux/slice/todoSlice";
 
-const TodoForm = ({ setTodos, todos }) => {
+const TodoForm = ({ refresh, todos }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const dispatch = useDispatch();
 
   const handleSubmit = async () => {
     const obj = {
@@ -16,11 +19,13 @@ const TodoForm = ({ setTodos, todos }) => {
       complete: false,
     };
 
-    if (!title.trim() || !description.trim()) return;
-    setTodos((prev) => [obj, ...prev]);
-    await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    if (!title.trim()) return;
+    //setTodos((prev) => [obj, ...prev]);
+    refresh();
     setTitle("");
     setDescription("");
+    dispatch(addTodo(obj));
+    await AsyncStorage.setItem("todos", JSON.stringify(todos));
   };
 
   return (

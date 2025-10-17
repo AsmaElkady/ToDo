@@ -14,3 +14,18 @@ export const onComplete = async (todos, item, callback) => {
   await AsyncStorage.setItem("todos", JSON.stringify(todos));
   callback(todos);
 };
+
+export const getTodos = async () => {
+  const list = JSON.parse(await AsyncStorage.getItem("todos")) || [];
+  return list;
+};
+
+export const saveTodos = async (list) => {
+  await AsyncStorage.setItem("todos", JSON.stringify(list));
+};
+
+export const filterTodos = (type, data, callback) => {
+  if (type == "all") return data;
+  const check = type == "completed" ? true : false;
+  callback(data.filter((todo) => todo.complete == check));
+};
