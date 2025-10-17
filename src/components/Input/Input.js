@@ -5,7 +5,7 @@ const Input = ({ placeholder, value, onChange, style }) => {
     <TextInput
       placeholder={placeholder}
       value={value}
-      onChange={onChange}
+      onChangeText={onChange}
       style={[style, styles.input]}
     />
   );
