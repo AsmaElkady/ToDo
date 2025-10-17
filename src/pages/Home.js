@@ -6,71 +6,77 @@ import TodoForm from "../section/TodoForm";
 import Filter from "../section/Filter";
 import ToDoCard from "../components/Card/ToDoCard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSelector, useDispatch } from "react-redux";
+import { saveAllTodos, deleteTodo, toggleTodo } from "../redux/slice/todoSlice";
+import { filterTodos } from "../utils/Todo";
 
 const Home = () => {
+  const listTodo = useSelector((state) => state.todos.todos);
   const [active, setActive] = useState("all");
-  const [todos, setTodos] = useState([]);
-  const [filterData, setFilterData] = useState(todos);
+  const [todos, setTodos] = useState(listTodo);
+  const [filterData, setFilterData] = useState(listTodo);
   const { navigate } = useNavigation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    getTodosStorage();
+    setTodos(listTodo);
+    handleFilterTodos(active);
+  }, [listTodo]);
+
+  useEffect(() => {
+    //getTodosStorage();
   }, []);
 
   const getTodosStorage = async () => {
     const allTodos = JSON.parse(await AsyncStorage.getItem("todos")) || [];
     setTodos(allTodos);
+    dispatch(saveAllTodos(allTodos));
   };
 
-  const filterTodos = (data) => {
-    if (data == "all") return todos;
-    const check = data == "completed" ? true : false;
-    setFilterData(todos.filter((todo) => todo.complete == check));
+  const handleFilterTodos = (type) => {
+    filterTodos(type, listTodo, (filtered) => setFilterData(filtered));
   };
 
-  const deleteTodo = async (item) => {
+  const handelDeleteTodo = async (item) => {
     const newList = todos.filter((todo) => todo.id != item.id);
     setTodos(newList);
     await AsyncStorage.setItem("todos", JSON.stringify(newList));
   };
+
   const completeTodo = async (item) => {
     const currTodo = todos.find((todo) => todo.id == item.id);
-    currTodo.complete = true;
-    setTodos([...todos]);
-    await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    if (currTodo) {
+      currTodo.complete = !currTodo.complete;
+      setTodos([...todos]);
+      await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    }
   };
 
   return (
     <View style={styles.container}>
-      <TodoForm setTodos={setTodos} todos={todos} />
+      <TodoForm refresh={() => handleFilterTodos(active)} todos={listTodo} />
       <View style={styles.dividerLine} />
       <Filter
         active={active}
         setActive={(data) => {
           setActive(data);
-          filterTodos(data);
+          handleFilterTodos(data);
         }}
       />
-      {/* <TodoList
-        todos={active == "all" ? todos : filterData}
-        setTodos={setTodos}
-        onDelete={(item) =>
-          onDelete(todos, item, (newTodo) => setTodos(newTodo))
-        }
-        onComplete={(item) =>
-          onComplete(todos, item, (newTodo) => setTodos(newTodo))
-        }
-      /> */}
       <FlatList
         style={styles.list}
-        data={active == "all" ? todos : filterData}
+        data={active == "all" ? listTodo : filterData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ToDoCard
             item={item}
             onPress={() => navigate(ROUTES.TODO_DETAILS, { item })}
-            onDelete={() => deleteTodo(item)}
-            onComplete={() => completeTodo(item)}
+            onDelete={() => {
+              dispatch(deleteTodo(item.id), handelDeleteTodo(item));
+            }}
+            onComplete={() => {
+              dispatch(toggleTodo(item.id), completeTodo(item));
+            }}
           />
         )}
       />
